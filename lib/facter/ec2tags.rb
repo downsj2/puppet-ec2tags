@@ -10,11 +10,10 @@ end
 # If we run multiple times in the same interpreter, don't query AWS again
 tags = {}
 
-def __gettags(ec2_metadata)
+def __gettags(metadata)
     tags_fact = {}	# Different format of the tags hash
     role = nil
     cachedir = '/opt/puppetlabs/puppet/cache/aws-tags'
-    metadata = Facter.value(:ec2_metadata)
 
     Dir.mkdir(cachedir, 0750) unless File.exists?(cachedir)
 
