@@ -2,13 +2,13 @@ require 'facter'
 require 'yaml'
 begin
     require 'aws-sdk'
-    sdk_present = true
+    $__sdk_present = true
 rescue LoadError
-    sdk_present = false # fail silently so facter doesn't complain
+    $__sdk_present = false # fail silently so facter doesn't complain
 end
 
 # If we run multiple times in the same interpreter, don't query AWS again
-tags = {}
+$__ec2_tags = {}
 
 def __gettags(metadata)
     tags_fact = {}	# Different format of the tags hash
@@ -21,22 +21,22 @@ def __gettags(metadata)
     region = metadata['placement']['availability-zone'][0...-1]
 
     begin
-	if sdk_present && tags.empty?
+	if $__sdk_present && $__ec2_tags.empty?
 	    ec2 = Aws::EC2::Client.new(region:region)
 	    instance = ec2.describe_instances(instance_ids:[instance_id])
-	    tags = instance.reservations[0].instances[0].tags
+	    $__ec2_tags = instance.reservations[0].instances[0].tags
 
 	    # Update cached tags
-	    File.write("#{cachedir}/#{instance_id}.yaml", YAML::dump(tags), { :perm => 0640 })
+	    File.write("#{cachedir}/#{instance_id}.yaml", YAML::dump($__ec2_tags), { :perm => 0640 })
 	end
     rescue
 	# Get cached tags
 	if File.exists?("#{cachedir}/#{instance_id}.yaml") then
-	    tags = YAML::load(File.read("#{cachedir}/#{instance_id}.yaml"))
+	    $__ec2_tags = YAML::load(File.read("#{cachedir}/#{instance_id}.yaml"))
 	end
     end
 
-    tags.each do |tag|
+    $__ec2_tags.each do |tag|
 	key = tag["key"].downcase
 
         if key == 'puppet_role'
@@ -49,7 +49,7 @@ def __gettags(metadata)
     {
 	:role => role,
 	:region => region,
-	:tags => tags,
+	:tags => $__ec2_tags,
 	:tags_fact => tags_fact
     }
 end
