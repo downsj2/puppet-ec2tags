@@ -50,8 +50,6 @@ def getinfo
     }
 end
 
-$info = getinfo()
-
 Facter.add(:role) do
     confine :kernel => 'Linux'
     confine :dmi do |d|
@@ -62,7 +60,7 @@ Facter.add(:role) do
     end
 
     setcode do
-        $info[:role]
+        getinfo()[:role]
     end
 end
 
@@ -76,9 +74,10 @@ Facter.add(:ec2_data) do
     end
 
     setcode do
+        info = getinfo()
         {
-            :region => $info[:region],
-            :tags => $info[:tags_fact]
+            :region => info[:region],
+            :tags => info[:tags_fact]
         }
     end
 end
