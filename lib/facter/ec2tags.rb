@@ -51,9 +51,10 @@ def getinfo
 end
 
 Facter.add(:role) do
+    has_weight 0
     confine :kernel => 'Linux'
     confine :dmi do |d|
-        d['bios']['version'] =~ /amazon/
+        d['bios']['version'] =~ /amazon/ || d['bios']['vendor'] == 'Amazon EC2'
     end
     confine :ec2_metadata do |v|
         v != nil
@@ -65,9 +66,10 @@ Facter.add(:role) do
 end
 
 Facter.add(:ec2_data) do
+    has_weight 0
     confine :kernel => 'Linux'
     confine :dmi do |d|
-        d['bios']['version'] =~ /amazon/
+        d['bios']['version'] =~ /amazon/ || d['bios']['vendor'] == 'Amazon EC2'
     end
     confine :ec2_metadata do |v|
         v != nil
